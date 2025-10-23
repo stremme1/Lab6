@@ -3,11 +3,18 @@
 
 #include "STM32L432KC.h"
 
-// Simple DS1722 implementation - Using Lab7 pins (same as hardware SPI)
-#define DS1722_CS_PIN   PA11  // Chip Select (Lab7 pin)
-#define DS1722_SCK_PIN  PB3   // Clock (Lab7 pin)
-#define DS1722_MISO_PIN PB4   // Data In (Lab7 pin)
-#define DS1722_MOSI_PIN PB5   // Data Out (Lab7 pin)
+/*
+DS1722.h
+Author: Emmett Stralka
+Date: 12/19/2024
+Description: DS1722 temperature sensor header
+*/
+
+// DS1722 pin definitions
+#define DS1722_CS_PIN   PA11
+#define DS1722_SCK_PIN  PB3
+#define DS1722_MISO_PIN PB4
+#define DS1722_MOSI_PIN PB5
 
 // Function prototypes
 void DS1722_init(void);
@@ -17,7 +24,7 @@ uint8_t DS1722_get_resolution(void);
 void DS1722_set_baud_rate(uint8_t baud_rate);
 uint8_t DS1722_get_baud_rate(void);
 
-// Simple SPI function prototypes
+// SPI helper functions
 void spi_delay(void);
 uint8_t spi_transfer(uint8_t data);
 

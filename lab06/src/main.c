@@ -144,7 +144,7 @@ int main(void) {
   
   USART_TypeDef * USART = initUSART(USART1_ID, 125000);
 
-  // Initialize hardware SPI for DS1722 (Lab7 pins)
+  // Initialize hardware SPI for DS1722
   initSPI(0b111, 0, 1); // br=7 (slowest), cpol=0, cpha=1 for DS1722
   
   // Configure DS1722 CS pin
@@ -174,7 +174,7 @@ int main(void) {
       request[charIndex++] = readChar(USART);
     }
 
-    // Read temperature from DS1722 sensor using hardware SPI (working code method)
+    // Read temperature from DS1722 sensor
     float temperature = updateTemperature(request);
   
     // Update LED state and resolution

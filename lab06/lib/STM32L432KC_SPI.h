@@ -11,7 +11,7 @@ Description: SPI peripheral driver for STM32L432KC
 #include <stdint.h>
 #include <stm32l432xx.h>
 
-// Lab7 Pin Definitions (exact copy)
+// SPI Pin Definitions
 #define SPI_CE PA11
 #define SPI_SCK PB3
 #define SPI_MOSI PB5
@@ -21,17 +21,15 @@ Description: SPI peripheral driver for STM32L432KC
 // Function prototypes
 ///////////////////////////////////////////////////////////////////////////////
 
-/* Enables the SPI peripheral and intializes its clock speed (baud rate), polarity, and phase.
- *    -- br: (0b000 - 0b111). The SPI clk will be the master clock / 2^(BR+1).
- *    -- cpol: clock polarity (0: inactive state is logical 0, 1: inactive state is logical 1).
- *    -- cpha: clock phase (0: data captured on leading edge of clk and changed on next edge, 
- *          1: data changed on leading edge of clk and captured on next edge)
- * Refer to the datasheet for more low-level details. */ 
+/* Initialize SPI peripheral with specified clock speed, polarity, and phase
+ * br: clock divider (0b000 - 0b111)
+ * cpol: clock polarity (0 = low when idle, 1 = high when idle)
+ * cpha: clock phase (0 = sample on first edge, 1 = sample on second edge) */ 
 void initSPI(int br, int cpol, int cpha);
 
-/* Transmits a character (1 byte) over SPI and returns the received character.
- *    -- send: the character to send over SPI
- *    -- return: the character received over SPI */
+/* Send and receive data over SPI
+ * send: byte to transmit
+ * return: byte received from slave */
 char spiSendReceive(char send);
 
 #endif

@@ -1,40 +1,41 @@
-// DS1722.c - SIMPLIFIED for Lab
+/*
+DS1722.c
+Author: Emmett Stralka
+Date: 12/19/2024
+Description: DS1722 temperature sensor driver
+*/
 #include "DS1722.h"
 
-// DS1722 pin definitions - Using Lab7 hardware SPI pins
-#define DS1722_CS_PIN   PA11  // Chip Select (Lab7 pin)
-#define DS1722_SCK_PIN  PB3   // Clock (Lab7 pin)
-#define DS1722_MISO_PIN PB4   // Data In (Lab7 pin)
-#define DS1722_MOSI_PIN PB5   // Data Out (Lab7 pin)
+// DS1722 pin definitions
+#define DS1722_CS_PIN   PA11
+#define DS1722_SCK_PIN  PB3
+#define DS1722_MISO_PIN PB4
+#define DS1722_MOSI_PIN PB5
 
-// Global resolution setting (default 12-bit)
+// Global settings
 static uint8_t current_resolution = 12;
-static uint8_t spi_baud_rate = 100; // Default delay for ~1MHz SPI
+static uint8_t spi_baud_rate = 100;
 
-// Simple delay - adjustable for different baud rates
+// Delay function for SPI timing
 void spi_delay(void) {
     for(volatile int i = 0; i < spi_baud_rate; i++);
 }
 
-// Simple SPI transfer
+// SPI data transfer
 uint8_t spi_transfer(uint8_t data) {
     uint8_t received = 0;
     
     for(int i = 7; i >= 0; i--) {
-        // Set MOSI
         digitalWrite(DS1722_MOSI_PIN, (data & (1 << i)) ? PIO_HIGH : PIO_LOW);
         spi_delay();
         
-        // Clock high
         digitalWrite(DS1722_SCK_PIN, PIO_HIGH);
         spi_delay();
         
-        // Read MISO
         if (digitalRead(DS1722_MISO_PIN) == PIO_HIGH) {
             received |= (1 << i);
         }
         
-        // Clock low
         digitalWrite(DS1722_SCK_PIN, PIO_LOW);
         spi_delay();
     }
@@ -42,9 +43,8 @@ uint8_t spi_transfer(uint8_t data) {
     return received;
 }
 
-// Initialize DS1722 - Hardware SPI version
+// Initialize DS1722 sensor
 void DS1722_init(void) {
-    // Only configure CS pin (hardware SPI handles SCK, MISO, MOSI)
     pinMode(DS1722_CS_PIN, GPIO_OUTPUT);
     digitalWrite(DS1722_CS_PIN, PIO_HIGH);
 }
@@ -54,8 +54,7 @@ void DS1722_set_resolution(uint8_t resolution) {
     if (resolution < 8 || resolution > 12) return;
     current_resolution = resolution;
     
-    // Configure DS1722 with new resolution
-    uint8_t config = 0x60; // Continuous mode
+    uint8_t config = 0x60;
     if (resolution == 8) config = 0b11100000;
     else if (resolution == 9) config = 0b11100010;
     else if (resolution == 10) config = 0b11100100;
@@ -63,7 +62,7 @@ void DS1722_set_resolution(uint8_t resolution) {
     else if (resolution == 12) config = 0b11101000;
     
     digitalWrite(DS1722_CS_PIN, PIO_LOW);
-    spiSendReceive(0x80); // Write config
+    spiSendReceive(0x80);
     spiSendReceive(config);
     digitalWrite(DS1722_CS_PIN, PIO_HIGH);
 }
@@ -72,25 +71,20 @@ void DS1722_set_resolution(uint8_t resolution) {
 float DS1722_read_temperature(void) {
     uint8_t lsb, msb;
     
-    // Read LSB
     digitalWrite(DS1722_CS_PIN, PIO_LOW);
-    spiSendReceive(0x01); // Read LSB register
+    spiSendReceive(0x01);
     lsb = spiSendReceive(0x00);
     digitalWrite(DS1722_CS_PIN, PIO_HIGH);
     
-    // Read MSB
     digitalWrite(DS1722_CS_PIN, PIO_LOW);
-    spiSendReceive(0x02); // Read MSB register
+    spiSendReceive(0x02);
     msb = spiSendReceive(0x00);
     digitalWrite(DS1722_CS_PIN, PIO_HIGH);
     
-    // Convert to temperature
     float temperature = (msb & 0b01111111);
 
-    // Check if temperature is negative
     if ((msb >> 7) & 1) {temperature -= 128;} 
 
-    // Apply resolution based on LSB
     float resolution = (float)((lsb >> 4) & 0x0F) * 0.0625;
 
     return temperature + resolution;
