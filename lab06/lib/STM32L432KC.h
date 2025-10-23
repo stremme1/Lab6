@@ -1,8 +1,8 @@
 // STM32L432KC.h
 // Header to include all other STM32L432KC libraries.
 
-#ifndef STM32L4_H
-#define STM32L4_H
+#ifndef STM32L432KC_H
+#define STM32L432KC_H
 
 
 #include <stdio.h>
@@ -18,6 +18,7 @@
 #include "STM32L432KC_FLASH.h"
 #include "STM32L432KC_USART.h"
 #include "STM32L432KC_SPI.h"
+#include "DS1722.h"
 
 // Global defines
 

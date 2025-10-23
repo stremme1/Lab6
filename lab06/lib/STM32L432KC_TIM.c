@@ -1,4 +1,4 @@
-// STM32F401RE_TIM.c
+// STM32L432KC_TIM.c
 // TIM functions
 
 #include "STM32L432KC_TIM.h"

@@ -9,8 +9,21 @@
 #define MAIN_H
 
 #include "STM32L432KC.h"
+#include "STM32L432KC_FLASH.h"
+#include "STM32L432KC_RCC.h"
+#include "STM32L432KC_TIM.h"
+#include "STM32L432KC_GPIO.h"
+#include "STM32L432KC_USART.h"
+#include "STM32L432KC_SPI.h"
 
-#define LED_PIN PB3 // LED pin for blinking on Port B pin 3
+#define LED_PIN PA5 // LD3 LED pin on STM32L432KC (Port A pin 5)
 #define BUFF_LEN 32
+
+// Function prototypes for main.c
+int inString(char request[], char des[]);
+int updateLEDStatus(char request[], int current_state);
+int updateResolution(char request[]);
+float readTemperatureSPI(uint8_t msb, uint8_t lsb);
+float updateTemperature(char request[]);
 
 #endif // MAIN_H

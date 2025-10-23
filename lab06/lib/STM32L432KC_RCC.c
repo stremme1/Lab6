@@ -1,28 +1,38 @@
-// STM32F401RE_RCC.c
+// STM32L432KC_RCC.c
 // Source code for RCC functions
 
 #include "STM32L432KC_RCC.h"
 
 void configurePLL() {
-   // Set clock to 80 MHz
-   // Output freq = (src_clk) * (N/M) / P
-   // (4 MHz) * (80/2) * 2  = 80 MHz
-   // M:, N:, P:
-   // Use HSI as PLLSRC
+   // Set clock to 80 MHz according to STM32L432KC manual
+   // Output freq = (src_clk) * (N/M) / R
+   // (4 MHz) * (80/2) / 2 = 80 MHz
+   // M=2, N=80, R=2
+   // Use MSI as PLLSRC (4 MHz)
 
-   RCC->CR &= ~_FLD2VAL(RCC_CR_PLLON, RCC->CR); // Turn off PLL
-   while (_FLD2VAL(RCC_CR_PLLRDY, 1) != 0); // Wait till PLL is unlocked (e.g., off)
+   RCC->CR &= ~RCC_CR_PLLON; // Turn off PLL
+   while (RCC->CR & RCC_CR_PLLRDY); // Wait till PLL is unlocked (e.g., off)
 
-   // Load configuration
-   RCC->PLLCFGR |= _VAL2FLD(RCC_PLLCFGR_PLLSRC, RCC_PLLCFGR_PLLSRC_MSI);
-   RCC->PLLCFGR |= _VAL2FLD(RCC_PLLCFGR_PLLM, 0b001); // M = 2
-   RCC->PLLCFGR |= _VAL2FLD(RCC_PLLCFGR_PLLN, 80);    // N = 80
-   RCC->PLLCFGR |= _VAL2FLD(RCC_PLLCFGR_PLLR, 0b00);  // R = 2
-   RCC->PLLCFGR |= RCC_PLLCFGR_PLLREN;                // Enable PLLCLK output
+   // Load configuration according to STM32L432KC manual
+   RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLSRC; // Clear PLLSRC
+   RCC->PLLCFGR |= RCC_PLLCFGR_PLLSRC_MSI; // Set MSI as PLL source
+   
+   // Configure PLLM (M = 2) - bits [5:0]
+   RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLM; // Clear PLLM
+   RCC->PLLCFGR |= (2 << RCC_PLLCFGR_PLLM_Pos); // M = 2
+   
+   // Configure PLLN (N = 80) - bits [14:8]  
+   RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLN; // Clear PLLN
+   RCC->PLLCFGR |= (80 << RCC_PLLCFGR_PLLN_Pos); // N = 80
+   
+   // Configure PLLR (R = 2) - bits [29:28]
+   RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLR; // Clear PLLR
+   RCC->PLLCFGR |= (0 << RCC_PLLCFGR_PLLR_Pos); // R = 2 (value 0 = divide by 2)
+   RCC->PLLCFGR |= RCC_PLLCFGR_PLLREN; // Enable PLLCLK output
 
    // Enable PLL and wait until it's locked
    RCC->CR |= RCC_CR_PLLON;
-   while(_FLD2VAL(RCC_CR_PLLRDY, RCC->CR) == 0);
+   while(!(RCC->CR & RCC_CR_PLLRDY));
 }
 
 void configureClock(){

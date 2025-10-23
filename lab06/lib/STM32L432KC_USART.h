@@ -1,8 +1,8 @@
-// STM32F401RE_USART.h
+// STM32L432KC_USART.h
 // Header for USART functions
 
-#ifndef STM32L4_USART_H
-#define STM32L4_USART_H
+#ifndef STM32L432KC_USART_H
+#define STM32L432KC_USART_H
 
 #include <stdint.h>
 #include <stm32l432xx.h>

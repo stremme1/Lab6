@@ -1,8 +1,8 @@
 // STM32L432KC_GPIO.h
 // Header for GPIO functions
 
-#ifndef STM32L4_GPIO_H
-#define STM32L4_GPIO_H
+#ifndef STM32L432KC_GPIO_H
+#define STM32L432KC_GPIO_H
 
 #include <stdint.h> // Include stdint header
 #include <stm32l432xx.h>
