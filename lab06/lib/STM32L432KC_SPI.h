@@ -1,6 +1,6 @@
 // STM32L432KC_SPI.h
 // SPI peripheral driver for STM32L432KC
-// Author: Emmett Stralka
+// Emmett Stralka
 // Date: 12/19/2024
 
 #ifndef STM32L4_SPI_H

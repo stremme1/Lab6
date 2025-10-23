@@ -1,6 +1,6 @@
 // STM32L432KC_SPI.c
 // SPI peripheral driver implementation for DS1722 temperature sensor
-// Author: Emmett Stralka
+// Emmett Stralka
 // Date: 12/19/2024
 
 #include "STM32L432KC.h"
