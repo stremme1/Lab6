@@ -3,11 +3,11 @@
 
 #include "STM32L432KC.h"
 
-// DS1722 temperature sensor interface
-#define DS1722_CS_PIN   PA11  // Chip Select
-#define DS1722_SCK_PIN  PB3   // Clock
-#define DS1722_MISO_PIN PB4   // Data In
-#define DS1722_MOSI_PIN PB5   // Data Out
+// Simple DS1722 implementation - Using Lab7 pins (same as hardware SPI)
+#define DS1722_CS_PIN   PA11  // Chip Select (Lab7 pin)
+#define DS1722_SCK_PIN  PB3   // Clock (Lab7 pin)
+#define DS1722_MISO_PIN PB4   // Data In (Lab7 pin)
+#define DS1722_MOSI_PIN PB5   // Data Out (Lab7 pin)
 
 // Function prototypes
 void DS1722_init(void);
