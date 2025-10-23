@@ -84,9 +84,9 @@ float updateTemperature(char request[]) {
 
 // Handle resolution changes
 int updateResolution(char request[]) {
-    static int current_resolution = 12; // Track current resolution
+    static int current_resolution = 12;
     
-    // Apply resolution changes to DS1722
+    // Handle resolution changes
     if (inString(request, "res8") == 1) {
         digitalWrite(PA11, PIO_HIGH);
         spiSendReceive(0x80);
@@ -136,22 +136,22 @@ int main(void) {
   gpioEnable(GPIO_PORT_C);
 
   pinMode(LED_PIN, GPIO_OUTPUT);
-  digitalWrite(LED_PIN, PIO_LOW); // Initialize LED off
+  digitalWrite(LED_PIN, PIO_LOW);
   
-  // Initialize timer for delays
+  // Setup timer
   RCC->APB1ENR1 |= RCC_APB1ENR1_TIM6EN;
   initTIM(TIM6);
   
   USART_TypeDef * USART = initUSART(USART1_ID, 125000);
 
-  // Initialize hardware SPI for DS1722 (Lab7 pins)
+  // Initialize hardware SPI for DS1722
   initSPI(0b111, 0, 1); // br=7 (slowest), cpol=0, cpha=1 for DS1722
   
-  // Configure DS1722 CS pin
+  // Setup DS1722 CS pin
   pinMode(PA11, GPIO_OUTPUT);
   digitalWrite(PA11, PIO_LOW);
   
-  // Configure DS1722 SPI connection
+  // Setup DS1722 SPI connection
   digitalWrite(PA11, PIO_HIGH);
   spiSendReceive(0x80);
   spiSendReceive(0xE8);
@@ -164,7 +164,7 @@ int main(void) {
     */
 
     // Receive web request from the ESP
-    char request[BUFF_LEN] = "                  "; // initialize to known value
+    char request[BUFF_LEN] = "                  ";
     int charIndex = 0;
   
     // Keep going until you get end of line character
@@ -174,11 +174,11 @@ int main(void) {
       request[charIndex++] = readChar(USART);
     }
 
-    // Read temperature from DS1722 sensor using hardware SPI (working code method)
+    // Read temperature from DS1722 sensor
     float temperature = updateTemperature(request);
   
     // Update LED state and resolution
-    static int led_status = 0; // Initialize LED status
+    static int led_status = 0;
     led_status = updateLEDStatus(request, led_status);
     int current_resolution = updateResolution(request);
 
@@ -197,7 +197,7 @@ int main(void) {
     sendString(USART, ledStatusStr);
     sendString(USART, "</p>");
 
-    // Display temperature reading with current resolution
+    // Display temperature reading
     sendString(USART, "<h2>Temperature</h2>");
     sendString(USART, "<p>Current Temperature: ");
     
@@ -206,12 +206,12 @@ int main(void) {
     sendString(USART, tempStr);
     sendString(USART, " &deg;C</p>");
     
-    // Display current resolution
+    // Display resolution
     char resStr[40];
     sprintf(resStr, "<p>Current Resolution: %d-bit</p>", current_resolution);
     sendString(USART, resStr);
     
-    // Add resolution control buttons
+    // Resolution control buttons
     sendString(USART, resolutionStr);
   
     sendString(USART, webpageEnd);
