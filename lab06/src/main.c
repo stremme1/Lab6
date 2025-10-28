@@ -55,40 +55,31 @@ int updateLEDStatus(char request[], int current_state)
 
 // Decode temperature from SPI bits
 float readTemperatureSPI(uint8_t msb, uint8_t lsb){
-    // Combine MSB and LSB to get 12-bit temperature
-    int16_t raw_temp = (msb << 8) | lsb;
-    
-    // Convert to temperature in Celsius
-    // DS1722 uses 12-bit two's complement with 0.0625°C per LSB
-    float temperature = (float)raw_temp * 0.0625;
-    
-    return temperature;
+    float temperature = (msb & 0b01111111);
+
+    // Check if temperature is negative
+    if ((msb >> 7) & 1) {temperature -= 128;} 
+
+    // Apply resolution based on LSB
+    float resolution = (float)((lsb >> 4) & 0x0F) * 0.0625;
+
+    return temperature + resolution;
 }
 
 // Read temperature from DS1722 via SPI
 float updateTemperature(char request[]) {
-    uint8_t msb, lsb;
-    
-    // DS1722 temperature read sequence:
-    // 1. Start conversion (if needed)
-    // 2. Read temperature registers
-    
-    // Read LSB (register 0x01) - DS1722 uses 0x01 for LSB
+    // Read temperature bits
     digitalWrite(PA11, PIO_HIGH);
-    spiSendReceive(0x01); // Read LSB register
-    lsb = spiSendReceive(0x00); // Dummy byte to get LSB data
-    digitalWrite(PA11, PIO_LOW);
-    
-    // Small delay between transactions
-    delayMicroseconds(100);
-    
-    // Read MSB (register 0x02) - DS1722 uses 0x02 for MSB  
-    digitalWrite(PA11, PIO_HIGH);
-    spiSendReceive(0x02); // Read MSB register
-    msb = spiSendReceive(0x00); // Dummy byte to get MSB data
+    spiSendReceive(0x01);
+    uint8_t lsb = spiSendReceive(0x00);
     digitalWrite(PA11, PIO_LOW);
 
-    return readTemperatureSPI(msb, lsb);
+    digitalWrite(PA11, PIO_HIGH);
+    spiSendReceive(0x02);
+    uint8_t msb = spiSendReceive(0x00);
+    digitalWrite(PA11, PIO_LOW);
+
+    return readTemperatureSPI(msb, lsb); // return temperature as float
 }
 
 // Handle resolution changes
@@ -98,33 +89,49 @@ int updateResolution(char request[]) {
     // Apply resolution changes to DS1722
     if (inString(request, "res8") == 1) {
         digitalWrite(PA11, PIO_HIGH);
+        // delay_millis(TIM6, 1);
         spiSendReceive(0x80);
-        spiSendReceive(0b11100000);
+        spiSendReceive(0b11100000); 
+        // delay_millis(TIM6, 1);
         digitalWrite(PA11, PIO_LOW);
+        // delay_millis(TIM6, 1);
         current_resolution = 8;
     } else if (inString(request, "res9") == 1) {
         digitalWrite(PA11, PIO_HIGH);
+        // delay_millis(TIM6, 1);
         spiSendReceive(0x80);
-        spiSendReceive(0b11100010);
+        spiSendReceive(0b11100010); // 0xE2 - Working value 
+        // delay_millis(TIM6, 1);
         digitalWrite(PA11, PIO_LOW);
+        // delay_millis(TIM6, 1);
         current_resolution = 9;
     } else if (inString(request, "res10") == 1) {
         digitalWrite(PA11, PIO_HIGH);
+        // delay_millis(TIM6, 1);
         spiSendReceive(0x80);
-        spiSendReceive(0b11100100);
+        spiSendReceive(0b11100100); // 0xE4 - Working value 
+        // delay_millis(TIM6, 1);
         digitalWrite(PA11, PIO_LOW);
+        // delay_millis(TIM6, 1);
         current_resolution = 10;
     } else if (inString(request, "res11") == 1) {
         digitalWrite(PA11, PIO_HIGH);
+        // delay_millis(TIM6, 1);
         spiSendReceive(0x80);
-        spiSendReceive(0b11100110);
+        spiSendReceive(0b11100110); // 0xE6 - Working value 
+        
+        // delay_millis(TIM6, 1);
         digitalWrite(PA11, PIO_LOW);
+        // delay_millis(TIM6, 1);
         current_resolution = 11;
     } else if (inString(request, "res12") == 1) {
         digitalWrite(PA11, PIO_HIGH);
+        // delay_millis(TIM6, 1);
         spiSendReceive(0x80);
-        spiSendReceive(0b11101000);
+        spiSendReceive(0b11101000); 
+        // delay_millis(TIM6, 1);
         digitalWrite(PA11, PIO_LOW);
+        // delay_millis(TIM6, 1);
         current_resolution = 12;
     }
     
@@ -154,38 +161,18 @@ int main(void) {
   
   USART_TypeDef * USART = initUSART(USART1_ID, 125000);
 
-   // Initialize hardware SPI for DS1722
-   initSPI(0b111, 0, 0); // br=7 (slowest), cpol=0, cpha=0 for DS1722 (try Mode 0)
-   
-   // Configure DS1722 CS pin
-   pinMode(PA11, GPIO_OUTPUT);
-   digitalWrite(PA11, PIO_LOW);
-   
-   // Wait for DS1722 to power up
-   delayMicroseconds(1000);
-   
-   // Initialize DS1722: Set 12-bit resolution and continuous conversion
-   digitalWrite(PA11, PIO_HIGH);
-   spiSendReceive(0x80); // Write to configuration register (0x80)
-   spiSendReceive(0xE8); // 12-bit resolution, continuous conversion (0xE8)
-   digitalWrite(PA11, PIO_LOW);
-   
-   // Wait for configuration to take effect
-   delayMicroseconds(1000);
-   
-   // Alternative: Try reading configuration to verify
-   digitalWrite(PA11, PIO_HIGH);
-   spiSendReceive(0x80); // Read configuration register
-   uint8_t config = spiSendReceive(0x00); // Read config value
-   digitalWrite(PA11, PIO_LOW);
-   
-   // Start temperature conversion
-   digitalWrite(PA11, PIO_HIGH);
-   spiSendReceive(0x51); // Start conversion command
-   digitalWrite(PA11, PIO_LOW);
-   
-   // Wait for first conversion to complete
-   delayMicroseconds(1000);
+  // Initialize hardware SPI for DS1722
+  initSPI(0b111, 0, 1); // br=7 (slowest), cpol=0, cpha=1 for DS1722
+  
+  // Configure DS1722 CS pin
+  pinMode(PA11, GPIO_OUTPUT);
+  digitalWrite(PA11, PIO_LOW);
+  
+  // Configure DS1722 SPI connection
+  digitalWrite(PA11, PIO_HIGH);
+  spiSendReceive(0x80);
+  spiSendReceive(0xE8);
+  digitalWrite(PA11, PIO_LOW);  
 
   while(1) {
     /* Wait for ESP8266 to send a request.
